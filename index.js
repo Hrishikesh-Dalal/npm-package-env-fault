@@ -42,7 +42,7 @@ console.log(chalk.gray('──────────────────�
 // Easter egg
 if (process.env.EASTER_EGG === 'true') {
   console.log(chalk.magenta.bold(`
-    🤫Congratulations! Now keep this a secret like you .env  
+    🤫Congratulations! Now keep this a secret like your .env  
 `));
 }
 
