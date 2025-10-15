@@ -1,0 +1,37 @@
+{
+  "name": "env-fault",
+  "version": "1.0.0",
+  "description": "This is a two way to check dependencies in env file and from code which are not mapped in env",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "bin": {
+    "env-fault": "index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Hrishikesh-Dalal/npm-package-env-fault.git"
+  },
+  "keywords": [
+    "env",
+    "environment",
+    "dotenv",
+    "cli",
+    "audit",
+    "variables",
+    "unused",
+    "missing"
+  ],
+  "author": "Hrishikesh Dalal",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Hrishikesh-Dalal/npm-package-env-fault/issues"
+  },
+  "homepage": "https://github.com/Hrishikesh-Dalal/npm-package-env-fault#readme",
+  "dependencies": {
+    "chalk": "^4.1.2",
+    "dotenv": "^17.2.3",
+    "glob": "^11.0.3"
+  }
+}
