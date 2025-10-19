@@ -15,18 +15,56 @@ if (!fs.existsSync(envFile)) {
 const env = dotenv.parse(fs.readFileSync(envFile));
 const definedVars = Object.keys(env);
 
-// 2️⃣ Find all JS/TS files in src/
-const files = glob.sync('src/**/*.{js,ts,jsx,tsx}', { nodir: true });
+// 2️⃣ Find JS/TS files in common locations (src, pages, components, app, root)
+const globs = [
+  'src/**/*.{js,ts,jsx,tsx}',
+  'pages/**/*.{js,ts,jsx,tsx}',
+  'components/**/*.{js,ts,jsx,tsx}',
+  'app/**/*.{js,ts,jsx,tsx}',
+  '*.{js,ts,jsx,tsx}'
+];
+const files = Array.from(
+  new Set(globs.flatMap((g) => glob.sync(g, { nodir: true })))
+);
 
-// 3️⃣ Scan files for process.env.VARIABLE usage
+// 3️⃣ Scan files for various env access patterns:
+//   - process.env.VAR
+//   - process.env['VAR'] or process.env["VAR"]
+//   - import.meta.env.VAR
+//   - import.meta.env['VAR']
+//   - destructuring: const { VAR, OTHER } = process.env  (or import.meta.env)
 const usedVarsSet = new Set();
-const envRegex = /process\.env\.([A-Z0-9_]+)/g;
+
+const simpleRegexes = [
+  /process\.env\.([A-Z0-9_]+)/g,
+  /process\.env\[['"]([A-Z0-9_]+)['"]\]/g,
+  /import\.meta\.env\.([A-Z0-9_]+)/g,
+  /import\.meta\.env\[['"]([A-Z0-9_]+)['"]\]/g
+];
+
+// destructuring from process.env or import.meta.env
+const destructureRegex = /(?:const|let|var)\s*\{\s*([A-Za-z0-9_,\s]+)\s*\}\s*=\s*(?:process\.env|import\.meta\.env)/g;
 
 files.forEach((file) => {
   const content = fs.readFileSync(file, 'utf-8');
-  let match;
-  while ((match = envRegex.exec(content)) !== null) {
-    usedVarsSet.add(match[1]);
+
+  simpleRegexes.forEach((re) => {
+    let match;
+    while ((match = re.exec(content)) !== null) {
+      if (match[1]) usedVarsSet.add(match[1]);
+    }
+  });
+
+  let dmatch;
+  while ((dmatch = destructureRegex.exec(content)) !== null) {
+    const names = dmatch[1]
+      .split(',')
+      .map((n) => n.trim().replace(/[:=].*$/, '')) // remove possible renames like "A: B" or default assignments
+      .filter(Boolean);
+    names.forEach((n) => {
+      // accept typical env-style names and also exported keys used in apps (keep it permissive)
+      if (/^[A-Za-z0-9_]+$/.test(n)) usedVarsSet.add(n);
+    });
   }
 });
 
@@ -43,7 +81,7 @@ console.log(chalk.gray('──────────────────�
 if (process.env.EASTER_EGG === 'true') {
   console.log(chalk.magenta.bold(`
     🤫Congratulations! Now keep this a secret like your .env  
-`));
+  `));
 }
 
 if (missing.length > 0) {
