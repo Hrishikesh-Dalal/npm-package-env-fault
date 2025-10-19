@@ -1,6 +1,6 @@
 {
   "name": "env-fault",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "This is a two way to check dependencies in env file and from code which are not mapped in env. It is used as a cli tool",
   "main": "index.js",
   "scripts": {
